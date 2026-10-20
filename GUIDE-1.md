@@ -86,7 +86,7 @@ int pthread_join(pthread_t thread, void **retval);
 **线程函数的固定格式。** 交给 `pthread_create` 执行的函数必须是这个样子：
 
 ```c
-void *函数名(void *参数名)
+void* 函数名(void* 参数名)
 ```
 
 也就是：接收一个 `void *` 参数，返回一个 `void *`。
@@ -196,8 +196,7 @@ C 语言要求函数先定义后使用，所以 `main` 写在文件最后；但�
 
 ```c
 /* structure for passing data to threads */
-typedef struct
-{
+typedef struct {
     int row;
     int column;
 } parameters;
@@ -243,7 +242,8 @@ int result[NUM_THREADS];
     for (i = 0; i < SIZE; i++) {
         for (j = 0; j < SIZE; j++) {
             if (scanf("%d", &sudoku[i][j]) != 1) {
-                fprintf(stderr, "Error: expected %d integers on standard input\n",
+                fprintf(stderr,
+                        "Error: expected %d integers on standard input\n",
                         SIZE * SIZE);
                 return EXIT_FAILURE;
             }
@@ -297,9 +297,9 @@ int result[NUM_THREADS];
 再看 `create_worker` 内部：
 
 ```c
-void create_worker(pthread_t *tid, void *(*routine)(void *), int row, int column)
-{
-    parameters *data = (parameters *) malloc(sizeof(parameters));
+void create_worker(pthread_t* tid, void* (*routine)(void*), int row,
+                   int column) {
+    parameters* data = (parameters*)malloc(sizeof(parameters));
     int err;
 
     if (data == NULL) {
@@ -327,13 +327,13 @@ void create_worker(pthread_t *tid, void *(*routine)(void *), int row, int column
 
 > **C 语法：`malloc` 和 `free`**
 >
-> `malloc(n)` 申请 n 个字节的内存，返回它的地址；这块内存会一直有效，直到调用 `free` 把它还回去。`sizeof(parameters)` 是一个 `parameters` 占用的字节数。前面的 `(parameters *)` 把返回的 `void *` 转换成 `parameters *`，在 C 语言里这个转换可写可不写，这里沿用了实验文档的写法。
+> `malloc(n)` 申请 n 个字节的内存，返回它的地址；这块内存会一直有效，直到调用 `free` 把它还回去。`sizeof(parameters)` 是一个 `parameters` 占用的字节数。前面的 `(parameters*)` 把返回的 `void *` 转换成 `parameters*`，在 C 语言里这个转换可写可不写。
 
 > **C 语法：`->`**
 >
 > `data` 是指向结构体的指针，`data->row` 表示"`data` 所指向的结构体的 `row` 成员"，等价于 `(*data).row`。
 
-> **C 语法：函数指针 `void *(*routine)(void *)`**
+> **C 语法：函数指针 `void* (*routine)(void*)`**
 >
 > 读作："`routine` 是一个指针，指向一个参数为 `void *`、返回值为 `void *` 的函数"，正好是线程函数的固定格式。C 语言中，函数名后面不加括号就代表这个函数的地址，所以 `main` 里可以直接写 `create_worker(&workers[0], check_rows, 0, 0)`，意思是"让新线程去执行 `check_rows`"。
 
@@ -344,9 +344,8 @@ void create_worker(pthread_t *tid, void *(*routine)(void *), int row, int column
 线程 0 执行的 `check_rows`：
 
 ```c
-void *check_rows(void *param)
-{
-    parameters *data = (parameters *) param;
+void* check_rows(void* param) {
+    parameters* data = (parameters*)param;
     int valid = 1;
     int i;
 
@@ -361,8 +360,8 @@ void *check_rows(void *param)
 
 逐行看：
 
-1. `void *check_rows(void *param)`：线程函数的固定格式。函数名前面的 `void *` 是返回值类型，并不表示 `check_rows` 本身是指针。`param` 就是 `pthread_create` 的第 4 个参数，也就是纸条的地址，只是类型变成了 `void *`。
-2. `parameters *data = (parameters *) param;`：把 `void *` 转回 `parameters *`，之后才能用 `data->row` 读纸条。
+1. `void* check_rows(void* param)`：线程函数的固定格式。函数名前面的 `void*` 是返回值类型，并不表示 `check_rows` 本身是指针。`param` 就是 `pthread_create` 的第 4 个参数，也就是纸条的地址，只是类型变成了 `void*`。
+2. `parameters* data = (parameters*)param;`：把 `void*` 转回 `parameters*`，之后才能用 `data->row` 读纸条。
 3. `int valid = 1;`：先假设所有行都合格。
 4. `for` 循环：从第 `data->row` 行（也就是第 0 行）开始，一行一行地调用 `region_is_valid` 检查（4.6 节详解）。循环条件 `i < SIZE && valid` 的意思是：一旦发现某一行不合格（`valid` 变成 0），就立刻停止，后面的行不必再查。
 5. `result[0] = valid;`：把结论填进登记表里属于自己的那一格。
@@ -381,9 +380,8 @@ void *check_rows(void *param)
 线程 2～10 执行的 `check_subgrid`：
 
 ```c
-void *check_subgrid(void *param)
-{
-    parameters *data = (parameters *) param;
+void* check_subgrid(void* param) {
+    parameters* data = (parameters*)param;
     int index = 2 + (data->row / 3) * 3 + data->column / 3;
 
     result[index] = region_is_valid(data->row, data->column, 3, 3);
@@ -401,8 +399,7 @@ void *check_subgrid(void *param)
 ```c
 /* Return 1 if the height x width block whose top-left cell is (row, column)
  * contains each of the digits 1-9 exactly once, otherwise 0. */
-int region_is_valid(int row, int column, int height, int width)
-{
+int region_is_valid(int row, int column, int height, int width) {
     int seen[SIZE + 1] = {0};
     int i, j;
 
@@ -410,8 +407,7 @@ int region_is_valid(int row, int column, int height, int width)
         for (j = column; j < column + width; j++) {
             int value = sudoku[i][j];
 
-            if (value < 1 || value > SIZE || seen[value])
-                return 0;
+            if (value < 1 || value > SIZE || seen[value]) return 0;
             seen[value] = 1;
         }
     }
@@ -448,8 +444,7 @@ int region_is_valid(int row, int column, int height, int width)
 ### 4.7 main 第 3 步：等待所有线程结束
 
 ```c
-    for (i = 0; i < NUM_THREADS; i++)
-        pthread_join(workers[i], NULL);
+    for (i = 0; i < NUM_THREADS; i++) pthread_join(workers[i], NULL);
 ```
 
 主线程按 0 到 10 的顺序逐个等待。如果某个线程早已结束，对应的 `pthread_join` 会立刻返回。循环结束时，11 个线程一定都已结束，`result` 的 11 个格子也都已填好。
@@ -469,11 +464,10 @@ int region_is_valid(int row, int column, int height, int width)
             int row = ((i - 2) / 3) * 3;
             int column = ((i - 2) % 3) * 3;
 
-            printf("subgrid rows %d-%d, columns %d-%d\n",
-                   row + 1, row + 3, column + 1, column + 3);
+            printf("subgrid rows %d-%d, columns %d-%d\n", row + 1, row + 3,
+                   column + 1, column + 3);
         }
-        if (!result[i])
-            valid = 0;
+        if (!result[i]) valid = 0;
     }
 
     printf("The Sudoku solution is %s.\n", valid ? "valid" : "invalid");

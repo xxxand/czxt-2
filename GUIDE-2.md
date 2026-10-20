@@ -69,7 +69,7 @@ Linux 上创建和管理线程用 **pthread**（POSIX 线程库）：代码里�
 | `pthread_create(&tid, NULL, 函数, 参数)` | 创建一个新线程去执行"函数(参数)"，新线程的编号写进 `tid`。调用者**不会等**新线程，而是立即往下执行 |
 | `pthread_join(tid, NULL)`                | 等待编号为 `tid` 的线程结束。在那之前，调用者停在这一行不动，这叫**阻塞**                          |
 
-交给 `pthread_create` 的函数必须写成 `void *函数名(void *参数名)` 的样子，只能接收一个 `void *` 参数（`void *` 是"可以指向任意类型数据的指针"）。要告诉线程好几个数时，就把它们装进一个结构体，把结构体的地址传过去；线程函数拿到后，再把它转换回结构体指针来读。
+交给 `pthread_create` 的函数必须写成 `void* 函数名(void* 参数名)` 的样子，只能接收一个 `void*` 参数（`void*` 是"可以指向任意类型数据的指针"）。要告诉线程好几个数时，就把它们装进一个结构体，把结构体的地址传过去；线程函数拿到后，再把它转换回结构体指针来读。
 
 ### 2.4 新问题：线程之间的先后顺序
 
@@ -133,8 +133,8 @@ POSIX 标准还保证：调用 `pthread_create` 之前写好的数据，新线�
 | --------------------- | ------------------------------------------------------------ |
 | `#include`、`#define` | 引入库函数；定义常量 `NUM_THREADS`（3）                      |
 | `parameters` 结构体   | 传给线程的参数：负责范围的起点 `start` 和终点 `end`          |
-| `int *list`           | 全局变量：读入的列表，两个排序线程各排其中一半               |
-| `int *sorted`         | 全局变量：第二个数组，合并线程把结果写在这里                 |
+| `int* list`           | 全局变量：读入的列表，两个排序线程各排其中一半               |
+| `int* sorted`         | 全局变量：第二个数组，合并线程把结果写在这里                 |
 | `int count`           | 全局变量：列表里有多少个数                                   |
 | `sorter()`            | 线程 0、1 执行的函数：用插入排序排好一段                     |
 | `merger()`            | 线程 2 执行的函数：把两半合并进 `sorted`                     |
@@ -198,15 +198,14 @@ C 语言要求函数先定义后使用，所以 `main` 写在文件最后；但�
 
 ```c
 /* structure for passing data to threads */
-typedef struct
-{
-    int start;  /* index of the first element */
-    int end;    /* index one past the last element */
+typedef struct {
+    int start; /* index of the first element */
+    int end;   /* index one past the last element */
 } parameters;
 
-int *list;      /* the input list; each sorting thread sorts one half of it */
-int *sorted;    /* the merging thread merges the two sorted halves into here */
-int count;      /* number of integers in list (and in sorted) */
+int* list;   /* the input list; each sorting thread sorts one half of it */
+int* sorted; /* the merging thread merges the two sorted halves into here */
+int count;   /* number of integers in list (and in sorted) */
 ```
 
 注释的意思依次是：用来给线程传递数据的结构体；`start` 是第一个元素的下标；`end` 是最后一个元素的**下一个**下标；`list` 是读入的列表，每个排序线程排其中一半；`sorted` 用来存放合并线程合并好的结果；`count` 是 `list`（也是 `sorted`）中整数的个数。
@@ -252,8 +251,7 @@ int count;      /* number of integers in list (and in sorted) */
 ```c
 /* Read integers from standard input until end of file into list, enlarging
  * list as needed, and set count. */
-void read_list(void)
-{
+void read_list(void) {
     int capacity = 0;
     int value;
     int status;
@@ -261,7 +259,7 @@ void read_list(void)
     while ((status = scanf("%d", &value)) == 1) {
         if (count == capacity) {
             capacity = (capacity == 0) ? 16 : capacity * 2;
-            list = (int *) realloc(list, capacity * sizeof(int));
+            list = (int*)realloc(list, capacity * sizeof(int));
             if (list == NULL) {
                 perror("realloc");
                 exit(EXIT_FAILURE);
@@ -272,7 +270,8 @@ void read_list(void)
 
     if (status != EOF || count == 0) {
         fprintf(stderr,
-                "Error: expected integers separated by whitespace on standard input\n");
+                "Error: expected integers separated by whitespace on standard "
+                "input\n");
         exit(EXIT_FAILURE);
     }
 }
@@ -316,7 +315,7 @@ void read_list(void)
 ### 4.4 main 第 2 步：准备第二个数组，打印原始列表
 
 ```c
-    sorted = (int *) malloc(count * sizeof(int));
+    sorted = (int*)malloc(count * sizeof(int));
     if (sorted == NULL) {
         perror("malloc");
         return EXIT_FAILURE;
@@ -331,13 +330,11 @@ void read_list(void)
 
 ```c
 /* Print label followed by array[start, end) on one line. */
-void print_list(const char *label, const int *array, int start, int end)
-{
+void print_list(const char* label, const int* array, int start, int end) {
     int i;
 
     printf("%-17s", label);
-    for (i = start; i < end; i++)
-        printf(" %d", array[i]);
+    for (i = start; i < end; i++) printf(" %d", array[i]);
     printf("\n");
 }
 ```
@@ -350,7 +347,7 @@ void print_list(const char *label, const int *array, int start, int end)
 
 > **C 语法：`const`**
 >
-> `const char *label` 表示"这个函数不会修改 `label` 指向的字符"，`const int *array` 同理。`const` 是给编译器和读代码的人的承诺：这个函数只读不写。
+> `const char* label` 表示"这个函数不会修改 `label` 指向的字符"，`const int* array` 同理。`const` 是给编译器和读代码的人的承诺：这个函数只读不写。
 
 ### 4.5 main 第 3 步：创建两个排序线程，并等它们结束
 
@@ -380,9 +377,9 @@ void print_list(const char *label, const int *array, int start, int end)
 `create_worker` 和 `sudoku.c` 里的同名函数几乎一样，只是纸条上写的是 `start` 和 `end`：
 
 ```c
-void create_worker(pthread_t *tid, void *(*routine)(void *), int start, int end)
-{
-    parameters *data = (parameters *) malloc(sizeof(parameters));
+void create_worker(pthread_t* tid, void* (*routine)(void*), int start,
+                   int end) {
+    parameters* data = (parameters*)malloc(sizeof(parameters));
     int err;
 
     if (data == NULL) {
@@ -406,7 +403,7 @@ void create_worker(pthread_t *tid, void *(*routine)(void *), int start, int end)
 2. **在纸条上写范围**：`data->start = start;` 和 `data->end = end;`。`data->start` 表示"`data` 指向的结构体的 `start` 成员"。
 3. **创建线程**：`pthread_create(tid, NULL, routine, data)` 创建新线程，让它执行 `routine(data)`，并把新线程的编号写进 `*tid`（也就是 `main` 里的 `workers[i]`）。失败时用 `strerror` 把错误码翻译成文字打印出来，然后结束程序。
 
-第二个参数 `void *(*routine)(void *)` 是**函数指针**：它指向一个"参数为 `void *`、返回值为 `void *`"的函数，也就是线程函数。所以 `create_worker(&workers[0], sorter, 0, middle)` 的意思就是"创建一个新线程去执行 `sorter`，负责 `[0, middle)`，编号存进 `workers[0]`"。纸条为什么必须用 `malloc` 申请、而不能用局部变量，GUIDE-1 第 6 节问题 1 有详细解释。
+第二个参数 `void* (*routine)(void*)` 是**函数指针**：它指向一个"参数为 `void*`、返回值为 `void*`"的函数，也就是线程函数。所以 `create_worker(&workers[0], sorter, 0, middle)` 的意思就是"创建一个新线程去执行 `sorter`，负责 `[0, middle)`，编号存进 `workers[0]`"。纸条为什么必须用 `malloc` 申请、而不能用局部变量，GUIDE-1 第 6 节问题 1 有详细解释。
 
 **等两个排序线程结束。** 两次 `create_worker` 之后，两个排序线程已经在同时工作了。主线程接着执行 `pthread_join(workers[0], NULL)`，停在这里等线程 0 结束，然后执行 `pthread_join(workers[1], NULL)` 等线程 1。如果线程 1 比线程 0 先结束也没关系，第二个 `pthread_join` 会立刻返回。两行都执行完时，两半一定都已排好。
 
@@ -414,9 +411,8 @@ void create_worker(pthread_t *tid, void *(*routine)(void *), int start, int end)
 
 ```c
 /* Sorting thread: sort list[start, end) in place with insertion sort. */
-void *sorter(void *param)
-{
-    parameters *data = (parameters *) param;
+void* sorter(void* param) {
+    parameters* data = (parameters*)param;
     int i, j;
 
     for (i = data->start + 1; i < data->end; i++) {
@@ -436,7 +432,7 @@ void *sorter(void *param)
 
 外层的框架和 `sudoku.c` 里的线程函数一样：
 
-1. `parameters *data = (parameters *) param;`：把收到的 `void *` 转回 `parameters *`，才能读纸条上的 `data->start` 和 `data->end`；
+1. `parameters* data = (parameters*)param;`：把收到的 `void*` 转回 `parameters*`，才能读纸条上的 `data->start` 和 `data->end`；
 2. 中间的两层 `for` 循环完成排序；
 3. `free(data);`：纸条用完了，归还内存；
 4. `return NULL;`：函数返回，这个线程就结束了。
@@ -497,13 +493,12 @@ list[0] = value     3  7 12 19 18
 ```c
 /* Merging thread: list[start, end) was split at its middle and each half was
  * sorted by a sorting thread; merge the two halves into sorted[start, end). */
-void *merger(void *param)
-{
-    parameters *data = (parameters *) param;
+void* merger(void* param) {
+    parameters* data = (parameters*)param;
     int middle = (data->start + data->end) / 2;
-    int i = data->start;    /* next element of the first half */
-    int j = middle;         /* next element of the second half */
-    int k = data->start;    /* next free position in sorted */
+    int i = data->start; /* next element of the first half */
+    int j = middle;      /* next element of the second half */
+    int k = data->start; /* next free position in sorted */
 
     while (i < middle && j < data->end) {
         if (list[i] <= list[j])
@@ -511,10 +506,8 @@ void *merger(void *param)
         else
             sorted[k++] = list[j++];
     }
-    while (i < middle)
-        sorted[k++] = list[i++];
-    while (j < data->end)
-        sorted[k++] = list[j++];
+    while (i < middle) sorted[k++] = list[i++];
+    while (j < data->end) sorted[k++] = list[j++];
 
     free(data);
     return NULL;
