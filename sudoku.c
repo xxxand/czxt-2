@@ -7,8 +7,9 @@
  *   thread 1      checks that each column contains the digits 1-9
  *   threads 2-10  each check one 3x3 subgrid (left to right, top to bottom)
  *
- * Build: gcc -Wall -o sudoku sudoku.c -pthread
- * Usage: ./sudoku < puzzle.txt
+ * Build: mkdir -p build && gcc -std=c99 -O2 -Wall -fno-asm "sudoku.c"
+ *        -o "build/sudoku" --static -lm
+ * Usage: ./build/sudoku < puzzle.txt
  */
 
 #include <pthread.h>

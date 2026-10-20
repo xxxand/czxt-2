@@ -7,14 +7,15 @@
 
 ## 文件说明
 
-| 文件                       | 内容                                        |
-| -------------------------- | ------------------------------------------- |
-| `sudoku.c`                 | Part I 源代码                               |
-| `sort.c`                   | Part II 源代码                              |
-| `README.md`                | 本文件：设计简介、编译和使用方法            |
-| `REPORT.md`                | 实验报告                                    |
-| `GUIDE-1.md`、`GUIDE-2.md` | `sudoku.c`、`sort.c` 的逐行讲解，面向初学者 |
-| `Lab02.md`                 | 实验要求                                    |
+| 文件                       | 内容                                               |
+| -------------------------- | -------------------------------------------------- |
+| `sudoku.c`                 | Part I 源代码                                      |
+| `sort.c`                   | Part II 源代码                                     |
+| `README.md`                | 本文件：设计简介、编译和使用方法                   |
+| `REPORT.md`                | 实验报告                                           |
+| `GUIDE-1.md`、`GUIDE-2.md` | `sudoku.c`、`sort.c` 的逐行讲解，面向初学者        |
+| `Lab02.md`                 | 实验要求                                           |
+| `build/`                   | 编译产物，由上面的命令生成，已被 `.gitignore` 忽略 |
 
 ## 运行环境
 
@@ -24,11 +25,13 @@
 ## 编译
 
 ```bash
-gcc -Wall -o sudoku sudoku.c -pthread
-gcc -Wall -o sort sort.c -pthread
+mkdir -p build && gcc -std=c99 -O2 -Wall -fno-asm "sudoku.c" -o "build/sudoku" --static -lm
+mkdir -p build && gcc -std=c99 -O2 -Wall -fno-asm "sort.c" -o "build/sort" --static -lm
 ```
 
-两个程序在 `-Wall -Wextra -pedantic` 下编译均无警告。
+可执行文件生成在 `build/` 目录中，分别是 `build/sudoku` 和 `build/sort`。`build/` 已写入 `.gitignore`，构建产物不会提交。
+
+选项说明：`-std=c99` 按 C99 标准编译，`-O2` 开启二级优化，`-Wall` 打开常用警告，`-fno-asm` 禁用 `asm` 关键字（程序本身没有使用内联汇编），`--static` 静态链接，`-lm` 链接数学库。两个程序编译均无警告；另外加上 `-Wextra -pedantic` 检查也没有警告。
 
 ## Part I：数独答案校验（sudoku）
 
@@ -51,7 +54,7 @@ gcc -Wall -o sort sort.c -pthread
 运行：
 
 ```bash
-./sudoku < puzzle.txt
+./build/sudoku < puzzle.txt
 ```
 
 输出：
@@ -92,8 +95,8 @@ The Sudoku solution is valid.
 程序从标准输入读入任意多个（至少 1 个）整数，数与数之间用空格或换行分隔，一直读到输入结束：
 
 ```bash
-echo 7 12 19 3 18 4 2 6 15 8 | ./sort
-./sort < list.txt
+echo 7 12 19 3 18 4 2 6 15 8 | ./build/sort
+./build/sort < list.txt
 ```
 
 输出：
@@ -108,7 +111,7 @@ Sorted list:      2 3 4 6 7 8 12 15 18 19
 四行依次是：原始列表、线程 0 排好的前一半、线程 1 排好的后一半、合并后的完整有序列表。
 
 - 用键盘输入时，输完数字后换到新的一行，按 Ctrl+D 表示输入结束。
-- 运行时要写 `./sort`；只写 `sort` 会运行系统自带的 `sort` 命令。
+- 运行时要写 `./build/sort`；只写 `sort` 会运行系统自带的 `sort` 命令。
 
 | 情况                                     | 输出                                                                                | 退出码 |
 | ---------------------------------------- | ----------------------------------------------------------------------------------- | ------ |

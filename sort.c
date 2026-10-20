@@ -9,9 +9,10 @@
  * The parent thread prints the original list, waits for the threads, then
  * prints each sorted half and the final sorted list.
  *
- * Build: gcc -Wall -o sort sort.c -pthread
- * Usage: ./sort < list.txt
- *        echo 7 12 19 3 18 4 2 6 15 8 | ./sort
+ * Build: mkdir -p build && gcc -std=c99 -O2 -Wall -fno-asm "sort.c"
+ *        -o "build/sort" --static -lm
+ * Usage: ./build/sort < list.txt
+ *        echo 7 12 19 3 18 4 2 6 15 8 | ./build/sort
  */
 
 #include <pthread.h>
