@@ -20,31 +20,31 @@
 
 ### 1.3 线程控制函数
 
-| 类别 | 函数 | 说明 |
-| --- | --- | --- |
-| 创建 | `pthread_create(&tid, attr, func, arg)` | 创建新线程执行 `func(arg)`，线程标识写入 `tid`；`attr` 为 `NULL` 时使用默认属性 |
-| 终止 | 线程函数 `return`，或调用 `pthread_exit(retval)` | 结束当前线程并给出返回值。注意：任一线程调用 `exit()`，或 `main` 返回，都会结束整个进程 |
-| 取消 | `pthread_cancel(tid)` | 请求取消另一个线程；默认在"取消点"（如 `pthread_join`、`sleep`、`read`）生效 |
-| 等待 | `pthread_join(tid, &retval)` | 阻塞直到指定线程结束，取得其返回值并回收其资源。可汇合的线程若既不 join 也不 detach，结束后资源不会释放（"僵尸线程"） |
-| 分离 | `pthread_detach(tid)` | 线程结束后由系统自动回收资源，之后不能再 join |
-| 标识 | `pthread_self()`、`pthread_equal(t1, t2)` | 获得当前线程的标识；比较两个标识 |
-| 属性 | `pthread_attr_init`、`pthread_attr_setdetachstate`、`pthread_attr_setstacksize`、`pthread_attr_destroy` | 创建线程前设置分离状态、栈大小等 |
-| 一次性初始化 | `pthread_once(&once, init)` | 保证 `init` 在多线程环境下只执行一次 |
-| 线程私有数据 | `pthread_key_create`、`pthread_setspecific`、`pthread_getspecific` | 同一个键在每个线程中对应各自的一份数据 |
-| 调度与 CPU 亲和 | `sched_yield()`、`pthread_setschedparam`、`pthread_setaffinity_np`（GNU 扩展）；命令行工具 `taskset` | 主动让出 CPU；设置调度策略和优先级；限定线程可以运行的 CPU |
-| 信号 | `pthread_kill(tid, sig)`、`pthread_sigmask` | 向指定线程发送信号；设置当前线程的信号掩码 |
+| 类别            | 函数                                                                                                    | 说明                                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 创建            | `pthread_create(&tid, attr, func, arg)`                                                                 | 创建新线程执行 `func(arg)`，线程标识写入 `tid`；`attr` 为 `NULL` 时使用默认属性                                       |
+| 终止            | 线程函数 `return`，或调用 `pthread_exit(retval)`                                                        | 结束当前线程并给出返回值。注意：任一线程调用 `exit()`，或 `main` 返回，都会结束整个进程                               |
+| 取消            | `pthread_cancel(tid)`                                                                                   | 请求取消另一个线程；默认在"取消点"（如 `pthread_join`、`sleep`、`read`）生效                                          |
+| 等待            | `pthread_join(tid, &retval)`                                                                            | 阻塞直到指定线程结束，取得其返回值并回收其资源。可汇合的线程若既不 join 也不 detach，结束后资源不会释放（"僵尸线程"） |
+| 分离            | `pthread_detach(tid)`                                                                                   | 线程结束后由系统自动回收资源，之后不能再 join                                                                         |
+| 标识            | `pthread_self()`、`pthread_equal(t1, t2)`                                                               | 获得当前线程的标识；比较两个标识                                                                                      |
+| 属性            | `pthread_attr_init`、`pthread_attr_setdetachstate`、`pthread_attr_setstacksize`、`pthread_attr_destroy` | 创建线程前设置分离状态、栈大小等                                                                                      |
+| 一次性初始化    | `pthread_once(&once, init)`                                                                             | 保证 `init` 在多线程环境下只执行一次                                                                                  |
+| 线程私有数据    | `pthread_key_create`、`pthread_setspecific`、`pthread_getspecific`                                      | 同一个键在每个线程中对应各自的一份数据                                                                                |
+| 调度与 CPU 亲和 | `sched_yield()`、`pthread_setschedparam`、`pthread_setaffinity_np`（GNU 扩展）；命令行工具 `taskset`    | 主动让出 CPU；设置调度策略和优先级；限定线程可以运行的 CPU                                                            |
+| 信号            | `pthread_kill(tid, sig)`、`pthread_sigmask`                                                             | 向指定线程发送信号；设置当前线程的信号掩码                                                                            |
 
 ### 1.4 线程同步方法
 
-| 机制 | 主要函数 | 用途 |
-| --- | --- | --- |
-| 线程等待 | `pthread_join` | 最简单的同步：等一个线程完全结束 |
-| 互斥锁 | `pthread_mutex_lock`、`pthread_mutex_unlock`、`pthread_mutex_trylock`；静态初始化 `PTHREAD_MUTEX_INITIALIZER` | 保证同一时刻只有一个线程进入临界区 |
-| 条件变量 | `pthread_cond_wait`、`pthread_cond_signal`、`pthread_cond_broadcast`；`PTHREAD_COND_INITIALIZER` | 与互斥锁配合使用，让线程等待某个条件成立 |
-| 读写锁 | `pthread_rwlock_rdlock`、`pthread_rwlock_wrlock`、`pthread_rwlock_unlock` | 允许多个线程同时读，写时独占 |
-| 屏障 | `pthread_barrier_init`、`pthread_barrier_wait` | 一组线程都到达同一点后再一起继续 |
-| 自旋锁 | `pthread_spin_lock`、`pthread_spin_unlock` | 忙等待的轻量级锁，适合临界区极短的场合 |
-| 信号量 | `sem_init`、`sem_wait`、`sem_post`、`sem_destroy`（`<semaphore.h>`） | 计数信号量，可用于互斥或资源计数 |
+| 机制     | 主要函数                                                                                                      | 用途                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| 线程等待 | `pthread_join`                                                                                                | 最简单的同步：等一个线程完全结束         |
+| 互斥锁   | `pthread_mutex_lock`、`pthread_mutex_unlock`、`pthread_mutex_trylock`；静态初始化 `PTHREAD_MUTEX_INITIALIZER` | 保证同一时刻只有一个线程进入临界区       |
+| 条件变量 | `pthread_cond_wait`、`pthread_cond_signal`、`pthread_cond_broadcast`；`PTHREAD_COND_INITIALIZER`              | 与互斥锁配合使用，让线程等待某个条件成立 |
+| 读写锁   | `pthread_rwlock_rdlock`、`pthread_rwlock_wrlock`、`pthread_rwlock_unlock`                                     | 允许多个线程同时读，写时独占             |
+| 屏障     | `pthread_barrier_init`、`pthread_barrier_wait`                                                                | 一组线程都到达同一点后再一起继续         |
+| 自旋锁   | `pthread_spin_lock`、`pthread_spin_unlock`                                                                    | 忙等待的轻量级锁，适合临界区极短的场合   |
+| 信号量   | `sem_init`、`sem_wait`、`sem_post`、`sem_destroy`（`<semaphore.h>`）                                          | 计数信号量，可用于互斥或资源计数         |
 
 POSIX 标准规定，上表中的 `pthread_create`、`pthread_join`、加锁和解锁、条件变量的等待和通知、屏障等待、信号量操作等函数会**同步内存**：一个线程在调用这些函数之前写入的数据，另一个线程在对应的同步操作之后一定能看到。本实验的两个程序正是依靠 `pthread_create` 和 `pthread_join` 的这一保证，让主线程和工作线程之间正确地传递数据。
 
@@ -141,8 +141,8 @@ int main(void)
 
 两个线程各把 `counter` 加 100 万次。各运行 5 次的结果：
 
-| 版本 | 5 次运行的 `counter` |
-| --- | --- |
+| 版本               | 5 次运行的 `counter`                        |
+| ------------------ | ------------------------------------------- |
 | 加锁（上面的代码） | 2000000、2000000、2000000、2000000、2000000 |
 | 删掉加锁和解锁两行 | 1060261、1000000、1088618、1452055、1041967 |
 
@@ -172,12 +172,12 @@ pthread_mutex_unlock(&lock);
 
 ### 1.6 本实验用到的方法
 
-| 方法 | 用途 |
-| --- | --- |
-| `pthread_create` | 创建工作线程，并把 `parameters` 结构体的地址传给它 |
-| `pthread_join` | Part I：等 11 个工作线程全部结束。Part II：先等两个排序线程，再创建合并线程，最后等合并线程 |
-| 全局数据 + 互不重叠的写入区域 | 代替锁：每个线程只写属于自己的位置，因此两个程序都不需要互斥锁 |
-| `taskset` | 性能实验中让程序只在一个 CPU 上运行，作为对比的基准（见 3.3 节） |
+| 方法                          | 用途                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `pthread_create`              | 创建工作线程，并把 `parameters` 结构体的地址传给它                                          |
+| `pthread_join`                | Part I：等 11 个工作线程全部结束。Part II：先等两个排序线程，再创建合并线程，最后等合并线程 |
+| 全局数据 + 互不重叠的写入区域 | 代替锁：每个线程只写属于自己的位置，因此两个程序都不需要互斥锁                              |
+| `taskset`                     | 性能实验中让程序只在一个 CPU 上运行，作为对比的基准（见 3.3 节）                            |
 
 ## 2. 程序设计
 
@@ -192,10 +192,10 @@ pthread_mutex_unlock(&lock);
 
 **线程分工**（实验文档建议的 11 线程方案）：
 
-| 线程 | 执行的函数 | 参数 (row, column) | 检查的区域 | 结果写入 |
-| --- | --- | --- | --- | --- |
-| 0 | `check_rows` | (0, 0) | 全部 9 行 | `result[0]` |
-| 1 | `check_columns` | (0, 0) | 全部 9 列 | `result[1]` |
+| 线程              | 执行的函数      | 参数 (row, column)         | 检查的区域                                 | 结果写入        |
+| ----------------- | --------------- | -------------------------- | ------------------------------------------ | --------------- |
+| 0                 | `check_rows`    | (0, 0)                     | 全部 9 行                                  | `result[0]`     |
+| 1                 | `check_columns` | (0, 0)                     | 全部 9 列                                  | `result[1]`     |
 | 2 + i（i = 0～8） | `check_subgrid` | ((i / 3) × 3, (i % 3) × 3) | 第 i + 1 个 3×3 子格（从左到右、从上到下） | `result[2 + i]` |
 
 **数据结构**：
@@ -241,11 +241,11 @@ pthread_mutex_unlock(&lock);
 
 **线程分工**：
 
-| 线程 | 执行的函数 | 参数 `[start, end)` | 工作 |
-| --- | --- | --- | --- |
-| 0 | `sorter` | `[0, middle)` | 用插入排序把前一半原地排好 |
-| 1 | `sorter` | `[middle, count)` | 用插入排序把后一半原地排好 |
-| 2 | `merger` | `[0, count)` | 把排好的两半合并进 `sorted` |
+| 线程 | 执行的函数 | 参数 `[start, end)` | 工作                        |
+| ---- | ---------- | ------------------- | --------------------------- |
+| 0    | `sorter`   | `[0, middle)`       | 用插入排序把前一半原地排好  |
+| 1    | `sorter`   | `[middle, count)`   | 用插入排序把后一半原地排好  |
+| 2    | `merger`   | `[0, count)`        | 把排好的两半合并进 `sorted` |
 
 其中 `middle = count / 2`。个数为奇数时后一半多 1 个；只有 1 个数时前一半为空，线程 0 仍会被创建，只是没有数可排。
 
@@ -303,14 +303,14 @@ pthread_mutex_unlock(&lock);
 
 ### 3.1 实验环境
 
-| 项目 | 配置 |
-| --- | --- |
-| 操作系统 | Ubuntu 26.04.1 LTS，运行在 WSL2 中 |
-| 内核 | Linux 6.18.54.1-microsoft-standard-WSL2（x86_64） |
-| CPU | Intel Core i9-14900HX，系统中可见 32 个逻辑 CPU |
-| 内存 | 15 GiB |
-| 编译器 | GCC 15.2.0 |
-| C 库 | glibc 2.43（NPTL） |
+| 项目     | 配置                                                                         |
+| -------- | ---------------------------------------------------------------------------- |
+| 操作系统 | Ubuntu 26.04.1 LTS，运行在 WSL2 中                                           |
+| 内核     | Linux 6.18.54.1-microsoft-standard-WSL2（x86_64）                            |
+| CPU      | Intel Core i9-14900HX，系统中可见 32 个逻辑 CPU                              |
+| 内存     | 15 GiB                                                                       |
+| 编译器   | GCC 15.2.0                                                                   |
+| C 库     | glibc 2.43（NPTL）                                                           |
 | 编译命令 | `gcc -Wall -o sudoku sudoku.c -pthread`，`gcc -Wall -o sort sort.c -pthread` |
 
 两个程序在 `-Wall -Wextra -pedantic` 下编译均无任何警告。
@@ -319,16 +319,16 @@ pthread_mutex_unlock(&lock);
 
 **测试用例**：以实验文档中的数独为基础，构造了以下输入：
 
-| 输入文件 | 说明 | 报告不合格的线程 | 结论 | 退出码 |
-| --- | --- | --- | --- | --- |
-| `valid.txt` | 实验文档中的数独 | 无 | valid | 0 |
-| `swap_same_box.txt` | 交换第 1 行第 1、2 列的 6 和 2（两格在同一子格内） | 1 | invalid | 0 |
-| `swap_cross_box.txt` | 交换第 1 行第 3、4 列的 4 和 5（两格在相邻的两个子格中） | 1、2、3 | invalid | 0 |
-| `dup_center.txt` | 把第 5 行第 5 列的 4 改为 5 | 0、1、6 | invalid | 0 |
-| `latin.txt` | 第 i 行为 1～9 循环左移 i − 1 位 | 2～10 | invalid | 0 |
-| `zero.txt` | 把第 9 行第 9 列的 6 改为 0 | 0、1、10 | invalid | 0 |
-| `short.txt` | 只有 80 个整数 | — | 报错 | 1 |
-| `letter.txt` | 把第一个数换成字母 `x` | — | 报错 | 1 |
+| 输入文件             | 说明                                                     | 报告不合格的线程 | 结论    | 退出码 |
+| -------------------- | -------------------------------------------------------- | ---------------- | ------- | ------ |
+| `valid.txt`          | 实验文档中的数独                                         | 无               | valid   | 0      |
+| `swap_same_box.txt`  | 交换第 1 行第 1、2 列的 6 和 2（两格在同一子格内）       | 1                | invalid | 0      |
+| `swap_cross_box.txt` | 交换第 1 行第 3、4 列的 4 和 5（两格在相邻的两个子格中） | 1、2、3          | invalid | 0      |
+| `dup_center.txt`     | 把第 5 行第 5 列的 4 改为 5                              | 0、1、6          | invalid | 0      |
+| `latin.txt`          | 第 i 行为 1～9 循环左移 i − 1 位                         | 2～10            | invalid | 0      |
+| `zero.txt`           | 把第 9 行第 9 列的 6 改为 0                              | 0、1、10         | invalid | 0      |
+| `short.txt`          | 只有 80 个整数                                           | —                | 报错    | 1      |
+| `letter.txt`         | 把第一个数换成字母 `x`                                   | —                | 报错    | 1      |
 
 **运行结果截图**（终端中的实际输出）：
 
@@ -381,10 +381,10 @@ $ echo $?
 
 **并发正确性检查**：
 
-| 工具 | 运行次数 | 报告的问题 |
-| --- | --- | --- |
-| ThreadSanitizer（`-fsanitize=thread`，检测数据竞争） | 上表 8 个输入各 20 次，共 160 次 | 0 |
-| AddressSanitizer + UBSan（`-fsanitize=address,undefined`，检测内存错误和未定义行为） | 8 个输入各 1 次 | 0 |
+| 工具                                                                                 | 运行次数                         | 报告的问题 |
+| ------------------------------------------------------------------------------------ | -------------------------------- | ---------- |
+| ThreadSanitizer（`-fsanitize=thread`，检测数据竞争）                                 | 上表 8 个输入各 20 次，共 160 次 | 0          |
+| AddressSanitizer + UBSan（`-fsanitize=address,undefined`，检测内存错误和未定义行为） | 8 个输入各 1 次                  | 0          |
 
 ### 3.3 Part II：多线程排序
 
@@ -417,15 +417,15 @@ $ echo $?
 
 **正确性统计**：
 
-| 测试 | 内容 | 结果 |
-| --- | --- | --- |
-| 典型输入 | 上面的例子，以及含负数和重复值的 `3 -1 3 0 -1 2` | 全部正确 |
-| 随机列表 | 500 个随机列表，长度 1～60，取值 −50～50；逐一检查原始列表、两个半段和最终结果 | 0 个错误 |
-| 大规模随机列表 | 性能实验中使用的 2.5 万～40 万个数（见下文） | 结果与 Python `sorted` 完全一致 |
-| 重复运行 | 实验文档的例子运行 1000 次 | 只出现 1 种输出 |
-| 错误输入 | 逗号分隔、空输入、含字母 | 均报错，退出码 1 |
-| ThreadSanitizer | 6 种输入（含 5000 个随机数）各 20 次，共 120 次 | 0 个报告 |
-| AddressSanitizer + UBSan | 6 种输入各 1 次 | 0 个报告 |
+| 测试                     | 内容                                                                           | 结果                            |
+| ------------------------ | ------------------------------------------------------------------------------ | ------------------------------- |
+| 典型输入                 | 上面的例子，以及含负数和重复值的 `3 -1 3 0 -1 2`                               | 全部正确                        |
+| 随机列表                 | 500 个随机列表，长度 1～60，取值 −50～50；逐一检查原始列表、两个半段和最终结果 | 0 个错误                        |
+| 大规模随机列表           | 性能实验中使用的 2.5 万～40 万个数（见下文）                                   | 结果与 Python `sorted` 完全一致 |
+| 重复运行                 | 实验文档的例子运行 1000 次                                                     | 只出现 1 种输出                 |
+| 错误输入                 | 逗号分隔、空输入、含字母                                                       | 均报错，退出码 1                |
+| ThreadSanitizer          | 6 种输入（含 5000 个随机数）各 20 次，共 120 次                                | 0 个报告                        |
+| AddressSanitizer + UBSan | 6 种输入各 1 次                                                                | 0 个报告                        |
 
 **性能实验**：为了观察多线程的效果，用不同规模的随机数据测量运行时间。
 
@@ -434,25 +434,25 @@ $ echo $?
 - 每种规模下两种方式交替各运行 5 次（N = 10 时各运行 200 次），输出重定向到 `/dev/null`。`real` 是进程从启动到结束的实际时间，`user` 是所有线程在用户态消耗的 CPU 时间之和。
 - 加速比 = 方式 (b) 的平均 `real` ÷ 方式 (a) 的平均 `real`。
 
-| N | (a) 不限制 CPU：`real`（均值 ± 标准差，秒） | (a) `user`（秒） | (b) 只用 1 个 CPU：`real`（秒） | (b) `user`（秒） | 加速比 |
-| --- | --- | --- | --- | --- | --- |
-| 10 | 0.0006 ± 0.0002 | 0.0003 | 0.0008 ± 0.0002 | 0.0005 | 1.32 |
-| 25,000 | 0.0433 ± 0.0004 | 0.0766 | 0.0802 ± 0.0011 | 0.0777 | 1.85 |
-| 50,000 | 0.1615 ± 0.0015 | 0.3087 | 0.3114 ± 0.0022 | 0.3085 | 1.93 |
-| 100,000 | 0.6411 ± 0.0062 | 1.2605 | 1.2463 ± 0.0084 | 1.2434 | 1.94 |
-| 200,000 | 2.5989 ± 0.0225 | 5.1561 | 5.0500 ± 0.0419 | 5.0461 | 1.94 |
-| 400,000 | 10.7149 ± 0.1630 | 21.2316 | 20.4913 ± 0.0949 | 20.4832 | 1.91 |
+| N       | (a) 不限制 CPU：`real`（均值 ± 标准差，秒） | (a) `user`（秒） | (b) 只用 1 个 CPU：`real`（秒） | (b) `user`（秒） | 加速比 |
+| ------- | ------------------------------------------- | ---------------- | ------------------------------- | ---------------- | ------ |
+| 10      | 0.0006 ± 0.0002                             | 0.0003           | 0.0008 ± 0.0002                 | 0.0005           | 1.32   |
+| 25,000  | 0.0433 ± 0.0004                             | 0.0766           | 0.0802 ± 0.0011                 | 0.0777           | 1.85   |
+| 50,000  | 0.1615 ± 0.0015                             | 0.3087           | 0.3114 ± 0.0022                 | 0.3085           | 1.93   |
+| 100,000 | 0.6411 ± 0.0062                             | 1.2605           | 1.2463 ± 0.0084                 | 1.2434           | 1.94   |
+| 200,000 | 2.5989 ± 0.0225                             | 5.1561           | 5.0500 ± 0.0419                 | 5.0461           | 1.94   |
+| 400,000 | 10.7149 ± 0.1630                            | 21.2316          | 20.4913 ± 0.0949                | 20.4832          | 1.91   |
 
 另外，N = 1,000,000 时以方式 (a) 运行 1 次，`real` 为 65.1 秒。
 
 规模每翻一倍，平均 `real` 的增长倍数：
 
-| N 的变化 | (a) 不限制 CPU | (b) 只用 1 个 CPU |
-| --- | --- | --- |
-| 25,000 → 50,000 | 3.73 | 3.88 |
-| 50,000 → 100,000 | 3.97 | 4.00 |
-| 100,000 → 200,000 | 4.05 | 4.05 |
-| 200,000 → 400,000 | 4.12 | 4.06 |
+| N 的变化          | (a) 不限制 CPU | (b) 只用 1 个 CPU |
+| ----------------- | -------------- | ----------------- |
+| 25,000 → 50,000   | 3.73           | 3.88              |
+| 50,000 → 100,000  | 3.97           | 4.00              |
+| 100,000 → 200,000 | 4.05           | 4.05              |
+| 200,000 → 400,000 | 4.12           | 4.06              |
 
 **分析**：
 
@@ -512,8 +512,8 @@ $ echo $?
 ## 5. 参考资料
 
 1. `Lab02.md`：本实验的实验指导。
-2. A. Silberschatz, P. B. Galvin, G. Gagne. *Operating System Concepts*, 10th ed. Wiley, 2018. 第 4 章 Threads & Concurrency，其中的编程项目 Sudoku Solution Validator 和 Multithreaded Sorting Application 即本实验的两个任务。
-3. M. Kerrisk. *The Linux Programming Interface*. No Starch Press, 2010. 第 29～33 章（线程）。
+2. A. Silberschatz, P. B. Galvin, G. Gagne. _Operating System Concepts_, 10th ed. Wiley, 2018. 第 4 章 Threads & Concurrency，其中的编程项目 Sudoku Solution Validator 和 Multithreaded Sorting Application 即本实验的两个任务。
+3. M. Kerrisk. _The Linux Programming Interface_. No Starch Press, 2010. 第 29～33 章（线程）。
 4. Linux man-pages：pthreads(7)，<https://man7.org/linux/man-pages/man7/pthreads.7.html>
 5. Linux man-pages：nptl(7)，<https://man7.org/linux/man-pages/man7/nptl.7.html>
 6. Linux man-pages：pthread_create(3)，<https://man7.org/linux/man-pages/man3/pthread_create.3.html>；pthread_join(3)，<https://man7.org/linux/man-pages/man3/pthread_join.3.html>
@@ -522,7 +522,7 @@ $ echo $?
 9. IEEE Std 1003.1-2017（POSIX.1-2017），Base Definitions 第 4.12 节 Memory Synchronization，<https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html>
 10. The GNU C Library 2.34 发布公告（libpthread 并入 libc），<https://sourceware.org/pipermail/libc-alpha/2021-August/129718.html>
 11. GCC 手册：Program Instrumentation Options（`-fsanitize=thread`、`-fsanitize=address`、`-fsanitize=undefined`），<https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html>
-12. T. H. Cormen, C. E. Leiserson, R. L. Rivest, C. Stein. *Introduction to Algorithms*, 3rd ed. MIT Press, 2009. 第 2 章（插入排序与归并）。
+12. T. H. Cormen, C. E. Leiserson, R. L. Rivest, C. Stein. _Introduction to Algorithms_, 3rd ed. MIT Press, 2009. 第 2 章（插入排序与归并）。
 
 ## 6. 建议与意见
 

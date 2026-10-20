@@ -20,8 +20,7 @@
 #define NUM_THREADS 11
 
 /* structure for passing data to threads */
-typedef struct
-{
+typedef struct {
     int row;
     int column;
 } parameters;
@@ -33,8 +32,7 @@ int result[NUM_THREADS];
 
 /* Return 1 if the height x width block whose top-left cell is (row, column)
  * contains each of the digits 1-9 exactly once, otherwise 0. */
-int region_is_valid(int row, int column, int height, int width)
-{
+int region_is_valid(int row, int column, int height, int width) {
     int seen[SIZE + 1] = {0};
     int i, j;
 
@@ -42,17 +40,15 @@ int region_is_valid(int row, int column, int height, int width)
         for (j = column; j < column + width; j++) {
             int value = sudoku[i][j];
 
-            if (value < 1 || value > SIZE || seen[value])
-                return 0;
+            if (value < 1 || value > SIZE || seen[value]) return 0;
             seen[value] = 1;
         }
     }
     return 1;
 }
 
-void *check_rows(void *param)
-{
-    parameters *data = (parameters *) param;
+void* check_rows(void* param) {
+    parameters* data = (parameters*)param;
     int valid = 1;
     int i;
 
@@ -64,9 +60,8 @@ void *check_rows(void *param)
     return NULL;
 }
 
-void *check_columns(void *param)
-{
-    parameters *data = (parameters *) param;
+void* check_columns(void* param) {
+    parameters* data = (parameters*)param;
     int valid = 1;
     int j;
 
@@ -78,9 +73,8 @@ void *check_columns(void *param)
     return NULL;
 }
 
-void *check_subgrid(void *param)
-{
-    parameters *data = (parameters *) param;
+void* check_subgrid(void* param) {
+    parameters* data = (parameters*)param;
     int index = 2 + (data->row / 3) * 3 + data->column / 3;
 
     result[index] = region_is_valid(data->row, data->column, 3, 3);
@@ -88,9 +82,9 @@ void *check_subgrid(void *param)
     return NULL;
 }
 
-void create_worker(pthread_t *tid, void *(*routine)(void *), int row, int column)
-{
-    parameters *data = (parameters *) malloc(sizeof(parameters));
+void create_worker(pthread_t* tid, void* (*routine)(void*), int row,
+                   int column) {
+    parameters* data = (parameters*)malloc(sizeof(parameters));
     int err;
 
     if (data == NULL) {
@@ -107,8 +101,7 @@ void create_worker(pthread_t *tid, void *(*routine)(void *), int row, int column
     }
 }
 
-int main(void)
-{
+int main(void) {
     pthread_t workers[NUM_THREADS];
     int valid = 1;
     int i, j;
@@ -116,7 +109,8 @@ int main(void)
     for (i = 0; i < SIZE; i++) {
         for (j = 0; j < SIZE; j++) {
             if (scanf("%d", &sudoku[i][j]) != 1) {
-                fprintf(stderr, "Error: expected %d integers on standard input\n",
+                fprintf(stderr,
+                        "Error: expected %d integers on standard input\n",
                         SIZE * SIZE);
                 return EXIT_FAILURE;
             }
@@ -128,8 +122,7 @@ int main(void)
     for (i = 0; i < SIZE; i++)
         create_worker(&workers[2 + i], check_subgrid, (i / 3) * 3, (i % 3) * 3);
 
-    for (i = 0; i < NUM_THREADS; i++)
-        pthread_join(workers[i], NULL);
+    for (i = 0; i < NUM_THREADS; i++) pthread_join(workers[i], NULL);
 
     for (i = 0; i < NUM_THREADS; i++) {
         printf("Thread %2d: %-7s  ", i, result[i] ? "valid" : "invalid");
@@ -141,11 +134,10 @@ int main(void)
             int row = ((i - 2) / 3) * 3;
             int column = ((i - 2) % 3) * 3;
 
-            printf("subgrid rows %d-%d, columns %d-%d\n",
-                   row + 1, row + 3, column + 1, column + 3);
+            printf("subgrid rows %d-%d, columns %d-%d\n", row + 1, row + 3,
+                   column + 1, column + 3);
         }
-        if (!result[i])
-            valid = 0;
+        if (!result[i]) valid = 0;
     }
 
     printf("The Sudoku solution is %s.\n", valid ? "valid" : "invalid");

@@ -22,20 +22,18 @@
 #define NUM_THREADS 3
 
 /* structure for passing data to threads */
-typedef struct
-{
-    int start;  /* index of the first element */
-    int end;    /* index one past the last element */
+typedef struct {
+    int start; /* index of the first element */
+    int end;   /* index one past the last element */
 } parameters;
 
-int *list;      /* the input list; each sorting thread sorts one half of it */
-int *sorted;    /* the merging thread merges the two sorted halves into here */
-int count;      /* number of integers in list (and in sorted) */
+int* list;   /* the input list; each sorting thread sorts one half of it */
+int* sorted; /* the merging thread merges the two sorted halves into here */
+int count;   /* number of integers in list (and in sorted) */
 
 /* Sorting thread: sort list[start, end) in place with insertion sort. */
-void *sorter(void *param)
-{
-    parameters *data = (parameters *) param;
+void* sorter(void* param) {
+    parameters* data = (parameters*)param;
     int i, j;
 
     for (i = data->start + 1; i < data->end; i++) {
@@ -52,13 +50,12 @@ void *sorter(void *param)
 
 /* Merging thread: list[start, end) was split at its middle and each half was
  * sorted by a sorting thread; merge the two halves into sorted[start, end). */
-void *merger(void *param)
-{
-    parameters *data = (parameters *) param;
+void* merger(void* param) {
+    parameters* data = (parameters*)param;
     int middle = (data->start + data->end) / 2;
-    int i = data->start;    /* next element of the first half */
-    int j = middle;         /* next element of the second half */
-    int k = data->start;    /* next free position in sorted */
+    int i = data->start; /* next element of the first half */
+    int j = middle;      /* next element of the second half */
+    int k = data->start; /* next free position in sorted */
 
     while (i < middle && j < data->end) {
         if (list[i] <= list[j])
@@ -66,18 +63,16 @@ void *merger(void *param)
         else
             sorted[k++] = list[j++];
     }
-    while (i < middle)
-        sorted[k++] = list[i++];
-    while (j < data->end)
-        sorted[k++] = list[j++];
+    while (i < middle) sorted[k++] = list[i++];
+    while (j < data->end) sorted[k++] = list[j++];
 
     free(data);
     return NULL;
 }
 
-void create_worker(pthread_t *tid, void *(*routine)(void *), int start, int end)
-{
-    parameters *data = (parameters *) malloc(sizeof(parameters));
+void create_worker(pthread_t* tid, void* (*routine)(void*), int start,
+                   int end) {
+    parameters* data = (parameters*)malloc(sizeof(parameters));
     int err;
 
     if (data == NULL) {
@@ -96,8 +91,7 @@ void create_worker(pthread_t *tid, void *(*routine)(void *), int start, int end)
 
 /* Read integers from standard input until end of file into list, enlarging
  * list as needed, and set count. */
-void read_list(void)
-{
+void read_list(void) {
     int capacity = 0;
     int value;
     int status;
@@ -105,7 +99,7 @@ void read_list(void)
     while ((status = scanf("%d", &value)) == 1) {
         if (count == capacity) {
             capacity = (capacity == 0) ? 16 : capacity * 2;
-            list = (int *) realloc(list, capacity * sizeof(int));
+            list = (int*)realloc(list, capacity * sizeof(int));
             if (list == NULL) {
                 perror("realloc");
                 exit(EXIT_FAILURE);
@@ -116,29 +110,27 @@ void read_list(void)
 
     if (status != EOF || count == 0) {
         fprintf(stderr,
-                "Error: expected integers separated by whitespace on standard input\n");
+                "Error: expected integers separated by whitespace on standard "
+                "input\n");
         exit(EXIT_FAILURE);
     }
 }
 
 /* Print label followed by array[start, end) on one line. */
-void print_list(const char *label, const int *array, int start, int end)
-{
+void print_list(const char* label, const int* array, int start, int end) {
     int i;
 
     printf("%-17s", label);
-    for (i = start; i < end; i++)
-        printf(" %d", array[i]);
+    for (i = start; i < end; i++) printf(" %d", array[i]);
     printf("\n");
 }
 
-int main(void)
-{
+int main(void) {
     pthread_t workers[NUM_THREADS];
     int middle;
 
     read_list();
-    sorted = (int *) malloc(count * sizeof(int));
+    sorted = (int*)malloc(count * sizeof(int));
     if (sorted == NULL) {
         perror("malloc");
         return EXIT_FAILURE;
