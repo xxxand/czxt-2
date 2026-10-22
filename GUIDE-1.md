@@ -101,8 +101,8 @@ void* 函数名(void* 参数名)
 
 本程序在设计上避开了数据竞争，所以**不需要任何锁**：
 
-1. **数独数组 `sudoku`**：主线程在创建工作线程**之前**就把它填好了，之后所有线程都只读不写。多个线程同时读同一份数据是安全的。
-2. **结果数组 `result`**：线程 `i` 只写 `result[i]`，不会有两个线程写同一格。
+1. **数独数组** `sudoku`：主线程在创建工作线程**之前**就把它填好了，之后所有线程都只读不写。多个线程同时读同一份数据是安全的。
+2. **结果数组** `result`：线程 `i` 只写 `result[i]`，不会有两个线程写同一格。
 3. 主线程等所有工作线程都**结束以后**，才去读 `result`。
 
 POSIX 标准还保证：调用 `pthread_create` 之前写好的数据，新线程一定能看到；线程结束前写入的数据，`pthread_join` 返回后调用者一定能看到。所以上面这个顺序是可靠的。
@@ -270,7 +270,7 @@ int result[NUM_THREADS];
 
 - 线程 0 执行 `check_rows`，起点 (0, 0)；
 - 线程 1 执行 `check_columns`，起点 (0, 0)；
-- 线程 2～10 **都执行 `check_subgrid`**，但起点不同，分别是 9 个子格的左上角。
+- 线程 2～10 **都执行** `check_subgrid`，但起点不同，分别是 9 个子格的左上角。
 
 子格的起点是这样算出来的：C 语言里两个整数相除只保留整数部分（`5 / 3` 等于 1），`%` 是取余数（`5 % 3` 等于 2）。当循环变量 `i` 从 0 走到 8 时：
 
@@ -618,6 +618,6 @@ The Sudoku solution is invalid.
 | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | 线程分工（实验文档建议的 11 线程方案）                                | 线程 0 执行 `check_rows`，线程 1 执行 `check_columns`，线程 2～10 执行 `check_subgrid` |
 | 创建与等待线程                                                        | `pthread_create` 创建，`pthread_join` 等待全部结束                                     |
-| 给线程传参（实验文档 _Passing Parameters to Each Thread_）            | `malloc` 一个 `parameters` 结构体写上起点，以 `void *` 交给线程，线程用完后 `free`     |
-| 向主线程返回结果（实验文档 _Returning Results to the Parent Thread_） | 全局数组 `result`，线程 `i` 只写 `result[i]`，因此不需要锁                             |
+| 给线程传参（实验文档 *Passing Parameters to Each Thread*）            | `malloc` 一个 `parameters` 结构体写上起点，以 `void *` 交给线程，线程用完后 `free`     |
+| 向主线程返回结果（实验文档 *Returning Results to the Parent Thread*） | 全局数组 `result`，线程 `i` 只写 `result[i]`，因此不需要锁                             |
 | 检查一个区域                                                          | `region_is_valid` 用 `seen` 数组判断区域里是否恰好有 1～9                              |
